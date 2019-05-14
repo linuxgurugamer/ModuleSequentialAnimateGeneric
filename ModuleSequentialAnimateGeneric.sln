@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27428.2005
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModuleSequentialAnimateGeneric", "Source\ModuleSequentialAnimateGeneric.csproj", "{D4885224-A387-444C-BD7B-72DB7F3ED2B4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9C1C9470-1671-4DFD-A8D7-4BEB0D3A44A9}"
+	ProjectSection(SolutionItems) = preProject
+		anim.cfg = anim.cfg
+		buildRelease.bat = buildRelease.bat
+		deploy.bat = deploy.bat
+		jenkins.txt = jenkins.txt
+		License.md = License.md
+		ModuleSequentialAnimateGeneric.version = ModuleSequentialAnimateGeneric.version
+		Readme.md = Readme.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D4885224-A387-444C-BD7B-72DB7F3ED2B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4885224-A387-444C-BD7B-72DB7F3ED2B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4885224-A387-444C-BD7B-72DB7F3ED2B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4885224-A387-444C-BD7B-72DB7F3ED2B4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {923C193B-9123-4353-AE90-394A79DD43CE}
+	EndGlobalSection
+EndGlobal
