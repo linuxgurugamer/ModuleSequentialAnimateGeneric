@@ -15,9 +15,12 @@ namespace ModuleSequentialAnimateGeneric
         internal float allowChildAnimAt;
         internal float allowParentAnimAt;
         internal float minDeployLimit;
-        internal ModuleAnimateGeneric mag;
+        internal double lastAnimTime;
+
         internal ModuleAnimateGeneric.animationStates animState = ModuleAnimateGeneric.animationStates.LOCKED;
         internal MovementStatus movementStatus;
+
+        ModuleAnimateGeneric _mag;
 
         public Sequence()
         {
@@ -30,8 +33,21 @@ namespace ModuleSequentialAnimateGeneric
             allowChildAnimAt = 0;
             allowParentAnimAt = 1;
             minDeployLimit = 0;
-            mag = null;
+            lastAnimTime = 0f;
+            _mag = null;
             movementStatus = MovementStatus.undef;
+        }
+
+        internal ModuleAnimateGeneric mag {
+            get { return _mag; }
+            set { _mag = value; if (_mag != null) lastAnimTime = _mag.animTime; }
+        }
+
+        public bool MagMoving    { get { return (_mag.animTime != lastAnimTime); } } 
+
+        public void UpdateAnimTime()
+        {
+            lastAnimTime = _mag.animTime;
         }
 
         //
@@ -40,7 +56,7 @@ namespace ModuleSequentialAnimateGeneric
         public MovementStatus AnimStatus(Sequence.MovementStatus curMovement)
         {
             MovementStatus rc;
-            if (mag.animTime > 0 && mag.animTime < 1)
+            if (MagMoving)
             {
                 rc = curMovement;
             }

@@ -30,7 +30,7 @@ module, with each line fully annotated:
 
 		SEQUENCE
 		{
-			seqNum = 1						// Used for error reporting, best if it was sequential
+			seqNum = 1						// Required, should start at one with the starting animation and move up
 			animName = BelugaDoorsal		// Name of the animation
 
 			// the mod thinks of 0 as closed, and 1 as open

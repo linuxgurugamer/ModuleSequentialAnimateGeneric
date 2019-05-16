@@ -53,6 +53,7 @@ namespace ModuleSequentialAnimateGeneric
             Log.Info("OpenEvent");
             firstSeq.mag.Toggle();
 
+            lastSeqnumEnabled = firstSeq.seqNum;
             SetMovementStatus(firstSeq, Sequence.MovementStatus.opening);
 
             SetEventStatus();
@@ -64,7 +65,7 @@ namespace ModuleSequentialAnimateGeneric
             Log.Info("CloseEvent");
 
             lastSeq.mag.Toggle();
-
+            lastSeqnumEnabled = lastSeq.seqNum;
             SetMovementStatus(lastSeq, Sequence.MovementStatus.closing);
 
             SetEventStatus();
@@ -113,11 +114,13 @@ namespace ModuleSequentialAnimateGeneric
                     break;
                 case Sequence.MovementStatus.closed:
                     firstSeq.mag.Toggle();
+                    lastSeqnumEnabled = firstSeq.seqNum;
                     SetMovementStatus(firstSeq, Sequence.MovementStatus.opening);
                     break;
 
                 case Sequence.MovementStatus.open:
                     lastSeq.mag.Toggle();
+                    lastSeqnumEnabled = lastSeq.seqNum;
                     SetMovementStatus(lastSeq, Sequence.MovementStatus.closing);
                     break;
             }
@@ -127,7 +130,7 @@ namespace ModuleSequentialAnimateGeneric
 
         void SetEventStatus()
         {
-           // Log.Info("SetEventStatus, movementStatus: " + movementStatus);
+            // Log.Info("SetEventStatus, movementStatus: " + movementStatus);
             switch (movementStatus)
             {
                 case Sequence.MovementStatus.undef:
@@ -169,7 +172,7 @@ namespace ModuleSequentialAnimateGeneric
         }
 
 
-    public void Start()
+        public void Start()
         {
             Log.Info("Start, part: " + part.name);
             {
@@ -195,8 +198,8 @@ namespace ModuleSequentialAnimateGeneric
             Events["OpenEvent"].guiName = openEventGUIName;
             Events["CloseEvent"].guiName = closeEventGUIName;
             Events["Action"].guiName = actionGUIName;
-            Events["OpenEvent"].active = true; 
-             Events["CloseEvent"].active = true;
+            Events["OpenEvent"].active = true;
+            Events["CloseEvent"].active = true;
             Events["Action"].active = false;
 
             Events["CloseEvent"].active = false;
@@ -204,7 +207,7 @@ namespace ModuleSequentialAnimateGeneric
             Sequence cur = firstSeq;
             while (cur != null)
             {
-              {
+                {
                     cur.mag = GetAnimation(cur.animName);
                     if (cur.mag == null)
                         Log.Error("No animation found at seqNum: " + cur.seqNum);
@@ -229,7 +232,7 @@ namespace ModuleSequentialAnimateGeneric
                 cur.mag.Actions["ToggleAction"].active = false;
 
                 cur.mag.Fields["status"].guiActive = false;
-  
+
                 cur = cur.childIdx;
             }
 
@@ -247,6 +250,7 @@ namespace ModuleSequentialAnimateGeneric
                 if (this.part.partInfo != null)
                     Log.Info("DumpConfig, part.partInfo.title: " + this.part.partInfo.title);
             }
+            Log.Info("DumpConfig, movementStatus: " + movementStatus);
             Sequence cur = firstSeq;
             while (cur != null)
             {
@@ -254,6 +258,9 @@ namespace ModuleSequentialAnimateGeneric
 
                 Log.Info("seqNum: " + cur.seqNum + ", animName: " + cur.animName + ", parent: " + cur.parent + ", allowChildAnimAt: " + cur.allowChildAnimAt +
                     ", movementStatus: " + cur.movementStatus + ", anim status based on animTime: " + m);
+                Log.Info("cur.lastAnimTime: " + cur.lastAnimTime + ", mag.animTime: " + cur.mag.animTime);
+
+
                 cur = cur.childIdx;
             }
         }
@@ -284,7 +291,8 @@ namespace ModuleSequentialAnimateGeneric
 
 
         float progress;
-        
+        int lastSeqnumEnabled;
+
         double lastMessageTime = (DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
 
         public void FixedUpdate()
@@ -300,14 +308,14 @@ namespace ModuleSequentialAnimateGeneric
                     if (cur.mag.deployPercent < cur.minDeployLimit)
                     {
                         // This logic is to not spam the screen with messages
-                        if ((DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds - lastMessageTime >1.5)
+                        if ((DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds - lastMessageTime > .75f)
                         {
-                            ScreenMessages.PostScreenMessage("Minimum limit exceeded", 1f, ScreenMessageStyle.UPPER_CENTER);
+                            ScreenMessages.PostScreenMessage("Minimum limit exceeded", 0.5f, ScreenMessageStyle.UPPER_CENTER);
                             lastMessageTime = (DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                         }
                         cur.mag.deployPercent = Mathf.Max(cur.mag.deployPercent, cur.minDeployLimit);
                     }
-                 
+
 
                     cur = cur.childIdx;
                 }
@@ -330,79 +338,97 @@ namespace ModuleSequentialAnimateGeneric
                 case Sequence.MovementStatus.open: return;
                 case Sequence.MovementStatus.opening: cur = firstSeq; break;
             }
-            int curSeqNum = 0;
-            while (cur != null) // && (/*curSeqNum <= lastToggled  || */ enableNext))
+
+            while (cur != null)
             {
-                curSeqNum++;
+
                 if (enableNext)
                 {
-                    if (cur.mag.aniState != ModuleAnimateGeneric.animationStates.MOVING &&
+                    if ((movementStatus == Sequence.MovementStatus.opening && lastSeqnumEnabled < cur.seqNum) ||
+                        movementStatus == Sequence.MovementStatus.closing && lastSeqnumEnabled > cur.seqNum)
+                    {
+                        Log.Info("movementStatus: " + movementStatus + ", cur.seqNum: " + cur.seqNum + ", lastSeqNumEnabled: " + lastSeqnumEnabled);
+                        if (cur.mag.aniState != ModuleAnimateGeneric.animationStates.MOVING &&
                         ((movementStatus == Sequence.MovementStatus.opening && cur.AnimStatus(movementStatus) != Sequence.MovementStatus.open) ||
                         (movementStatus == Sequence.MovementStatus.closing && cur.AnimStatus(movementStatus) != Sequence.MovementStatus.closed))
                         )
-                    {
-                        cur.AnimStatus(movementStatus);
-                        cur.mag.Toggle();
-                        cur.animState = ModuleAnimateGeneric.animationStates.MOVING;
-                        cur.mag.aniState = ModuleAnimateGeneric.animationStates.MOVING;
+                        {
+                            Log.Info("enableNext, cur.seqNum: " + cur.seqNum + ", movementStatus: " + movementStatus + ", cur.AnimStatus(movementStatus): " + cur.AnimStatus(movementStatus) + "," +
+
+                                "mag.animTime: " + cur.mag.animTime + ", mag.deployPercent: " + cur.mag.deployPercent
+                                );
+                            cur.AnimStatus(movementStatus);
+                            cur.mag.Toggle();
+                            lastSeqnumEnabled = cur.seqNum;
+
+                            cur.animState = ModuleAnimateGeneric.animationStates.MOVING;
+                            cur.mag.aniState = ModuleAnimateGeneric.animationStates.MOVING;
+                        }
                     }
                     enableNext = false;
                 }
 
                 progress = (cur.closed == 1) ? cur.closed - cur.mag.Progress : cur.mag.Progress;
-
-                if (movementStatus == Sequence.MovementStatus.opening)
+                switch (movementStatus)
                 {
-                    if (cur.mag.aniState == ModuleAnimateGeneric.animationStates.MOVING)
-                    {
-                        cur.animState = cur.mag.aniState;
-                        if ((cur.allowChildAnimAt <= progress  || progress >= cur.mag.deployPercent/100f )&& cur.childIdx != null)
+
+                    case Sequence.MovementStatus.opening:
                         {
-                             enableNext = true;
-                        }
+                            if (cur.mag.aniState == ModuleAnimateGeneric.animationStates.MOVING)
+                            {
+                                cur.animState = cur.mag.aniState;
+                                if ((cur.allowChildAnimAt <= progress || progress >= cur.mag.deployPercent / 100f) && cur.childIdx != null)
+                                {
+                                    Log.Info("1-enableNext = true, cur.seqNum:" + cur.seqNum + ", progress: " + progress +
+                                        ", cur.mag.deployPercent: " + cur.mag.deployPercent);
+                                    enableNext = true;
+                                }
 
-                        anyMoving = true; // anyMoving || cur.mag.IsMoving();
-                    }
-
-                    if (enableNext || cur.AnimStatus(Sequence.MovementStatus.opening) == Sequence.MovementStatus.open)
-                    {
-                        if (cur.childIdx != null && cur.childIdx.AnimStatus(movementStatus) != Sequence.MovementStatus.open)
-                            enableNext = true;
-                        cur.movementStatus = Sequence.MovementStatus.open;
-                    }
+                                anyMoving = true;
+                            }
+                            else
+                            {
+                                if (cur.AnimStatus(Sequence.MovementStatus.opening) == Sequence.MovementStatus.open)
+                                    cur.movementStatus = Sequence.MovementStatus.open;
+                            }
 
 #if DEBUG
-                    prev = cur;
+                            prev = cur;
 #endif
-                    cur = cur.childIdx;
+                            cur.UpdateAnimTime();
+                            cur = cur.childIdx;
 
-                }
-                else
-                {
-                    if (cur.mag.aniState == ModuleAnimateGeneric.animationStates.MOVING)
-                    {
-                        
-                        cur.animState = cur.mag.aniState;
-                        if (cur.allowParentAnimAt >= progress && cur.parentIdx != null)
-                        {
-                            enableNext = true;
                         }
+                        break;
+                    case Sequence.MovementStatus.closing:
+                        {
+                            if (cur.mag.aniState == ModuleAnimateGeneric.animationStates.MOVING)
+                            {
 
-                        anyMoving = true;// anyMoving || cur.mag.IsMoving();
-                    }
-                    
-                    if (enableNext || cur.AnimStatus(Sequence.MovementStatus.closing) == Sequence.MovementStatus.closed)
-                    {
-                        if (cur.parentIdx != null && cur.parentIdx.AnimStatus(movementStatus) != Sequence.MovementStatus.closed)
-                            enableNext = true;
-                        cur.movementStatus = Sequence.MovementStatus.closed;
-                    }
+                                cur.animState = cur.mag.aniState;
+                                if (cur.allowParentAnimAt >= progress && cur.parentIdx != null)
+                                {
+                                    Log.Info("3-enableNext = true, movementStatus: " + movementStatus + ", cur.allowParentAnimAt: " + cur.allowParentAnimAt + ", progress: " + progress);
+
+                                    enableNext = true;
+                                }
+
+                                anyMoving = true;
+                            }
+                            else
+                            {
+                                if (cur.AnimStatus(Sequence.MovementStatus.closing) == Sequence.MovementStatus.closed)
+                                    cur.movementStatus = Sequence.MovementStatus.closed;
+                            }
 
 #if DEBUG
-                    prev = cur;
+                            prev = cur;
 #endif
-                    cur = cur.parentIdx;
+                            cur.UpdateAnimTime();
+                            cur = cur.parentIdx;
 
+                        }
+                        break;
                 }
             }
 
@@ -415,7 +441,7 @@ namespace ModuleSequentialAnimateGeneric
                         break;
                     case Sequence.MovementStatus.closing:
                         cur = lastSeq;
-                     
+
                         while (cur != null)
                         {
                             if (cur.movementStatus != Sequence.MovementStatus.closed)
