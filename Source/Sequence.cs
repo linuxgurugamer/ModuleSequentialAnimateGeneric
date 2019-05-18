@@ -17,7 +17,6 @@ namespace ModuleSequentialAnimateGeneric
         internal float minDeployLimit;
         internal double lastAnimTime;
 
-        internal ModuleAnimateGeneric.animationStates animState = ModuleAnimateGeneric.animationStates.LOCKED;
         internal MovementStatus movementStatus;
 
         ModuleAnimateGeneric _mag;

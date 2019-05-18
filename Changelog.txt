@@ -1,0 +1,8 @@
+0.0.0.1
+	Initial Release
+
+0.0.0.2
+	Minor change to attempt to minimize the flickering when adjusting the limit below the allowable value
+	Fixed issue in the editor with the animation closing too fast for the mod to keep up 
+	Removed the animState variable in the Seqence class
+	Simplified and optimized the code dealing with the animation
