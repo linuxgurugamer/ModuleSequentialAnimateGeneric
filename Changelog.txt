@@ -6,3 +6,6 @@
 	Fixed issue in the editor with the animation closing too fast for the mod to keep up 
 	Removed the animState variable in the Seqence class
 	Simplified and optimized the code dealing with the animation
+
+0.0.0.3
+	Version bump for 1.7.2
