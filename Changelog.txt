@@ -1,5 +1,11 @@
-0.0.0.1
-	Initial Release
+ChangeLog
+
+0.0.1
+	Added InstallChecker
+	Updated for KSP 1.8
+
+0.0.0.3
+	Version bump for 1.7.2
 
 0.0.0.2
 	Minor change to attempt to minimize the flickering when adjusting the limit below the allowable value
@@ -7,5 +13,5 @@
 	Removed the animState variable in the Seqence class
 	Simplified and optimized the code dealing with the animation
 
-0.0.0.3
-	Version bump for 1.7.2
+0.0.0.1
+	Initial Release
